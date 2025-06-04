@@ -32,7 +32,8 @@
           </div>
         </div>
 
-        <div class="navigation-buttons">
+        <!-- Question Counter -->
+        <div class="question-counter">
           <button
             @click="prevQuestion"
             class="prev-button borderless"
@@ -40,6 +41,9 @@
           >
             Précédent
           </button>
+          <p>
+            Question {{ currentQuestionIndex + 1 }} / {{ questions.length }}
+          </p>
         </div>
       </div>
 
@@ -85,6 +89,7 @@ export default {
       currentQuestionIndex: 0,
       showResult: false,
       displayedText: "",
+      textAnimationInterval: null,
     };
   },
   computed: {
@@ -147,16 +152,24 @@ export default {
       this.revealText();
     },
     revealText() {
+      // Clear any ongoing animation
+      if (this.textAnimationInterval) {
+        clearInterval(this.textAnimationInterval);
+        this.textAnimationInterval = null;
+      }
+
       const fullText = this.questions[this.currentQuestionIndex].text;
       this.displayedText = "";
       let index = 0;
 
-      const interval = setInterval(() => {
+      // Start a new animation
+      this.textAnimationInterval = setInterval(() => {
         if (index < fullText.length) {
           this.displayedText += fullText[index];
           index++;
         } else {
-          clearInterval(interval);
+          clearInterval(this.textAnimationInterval);
+          this.textAnimationInterval = null; // Reset the interval ID
         }
       }, 40);
     },
@@ -190,9 +203,9 @@ export default {
     background-color: #f9f9f9;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  
+
     .question-text {
-      min-height: 80px;
+      min-height: 50px;
       margin-top: 0px;
     }
 
@@ -207,6 +220,12 @@ export default {
       margin-bottom: 20px;
       animation: fadeIn 0.5s ease-in-out;
     }
+  }
+
+  .question-counter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
 
   @keyframes fadeIn {
