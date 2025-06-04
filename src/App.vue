@@ -1,7 +1,14 @@
 <template>
   <div class="quiz-container">
     <!-- Title -->
-    <h1 class="quiz-title">Test d'éco-anxiété</h1>
+    <h1 class="quiz-title">
+      Test d'éco-anxiété
+      <img
+        src="./assets/Logo-Blue-Eco-Formations-300x90.png"
+        alt="Eco Anxiety Icon"
+        class="quiz-icon"
+      />
+    </h1>
 
     <transition name="fade" mode="out-in">
       <!-- Question -->
@@ -17,7 +24,7 @@
               @click="selectAnswer(value)"
               class="choice-button"
               :class="{
-                'selected': answers[currentQuestionIndex] === value,
+                selected: answers[currentQuestionIndex] === value,
               }"
             >
               {{ label }}
@@ -140,7 +147,6 @@ export default {
 </script>
 
 <style scoped lang="scss">
-
 .quiz-container {
   width: 400px;
   margin: 0 auto;
@@ -149,11 +155,23 @@ export default {
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 
+  .quiz-title {
+    text-align: center;
+    display: flex;
+    align-items: center;  
+    justify-content: space-between;
+
+    .quiz-icon {
+      width: 130px;
+      height: auto;
+      margin-left: 10px;
+    }
+  }
+
   .choices-container {
     display: flex;
     flex-direction: column;
     gap: 5px;
   }
 }
-
 </style>
