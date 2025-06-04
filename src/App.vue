@@ -1,26 +1,23 @@
 <template>
-  <div class="max-w-xl mx-auto p-4">
+  <div class="quiz-container">
     <!-- Title -->
-    <h2 class="text-2xl font-bold mb-6 text-center animate-fade-in">
-      Test d'éco-anxiété
-    </h2>
+    <h1 class="quiz-title">Test d'éco-anxiété</h1>
 
     <transition name="fade" mode="out-in">
       <!-- Question -->
       <div v-if="!showResult" :key="currentQuestionIndex">
-        <div class="mb-4 animate-fade-in">
-          <p class="mb-4 text-lg font-medium">
+        <div class="question-container">
+          <p class="question-text">
             {{ questions[currentQuestionIndex].text }}
           </p>
-          <div class="flex flex-col gap-2">
+          <div class="choices-container">
             <button
               v-for="(label, value) in choices"
               :key="value"
               @click="selectAnswer(value)"
-              class="bg-gray-100 hover:bg-blue-500 hover:text-white px-4 py-2 rounded transition-all duration-200"
+              class="choice-button"
               :class="{
-                'bg-blue-500 text-white':
-                  answers[currentQuestionIndex] === value,
+                'selected': answers[currentQuestionIndex] === value,
               }"
             >
               {{ label }}
@@ -28,48 +25,30 @@
           </div>
         </div>
 
-        <div class="flex justify-between mt-6">
+        <div class="navigation-buttons">
           <button
             @click="prevQuestion"
-            class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
+            class="prev-button borderless"
             :disabled="currentQuestionIndex === 0"
           >
             Précédent
-          </button>
-          <button
-            @click="nextQuestion"
-            class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-            :disabled="answers[currentQuestionIndex] === undefined"
-          >
-            {{
-              currentQuestionIndex === questions.length - 1
-                ? "Voir mon résultat"
-                : "Suivant"
-            }}
           </button>
         </div>
       </div>
 
       <!-- Result -->
-      <div v-else key="result" class="animate-fade-in">
-        <h2 class="text-2xl font-bold mb-4 text-center">
-          Ton niveau d'éco-anxiété
-        </h2>
-        <div class="relative h-6 bg-gray-200 rounded overflow-hidden">
+      <div v-else key="result" class="result-container">
+        <h2 class="result-title">Ton niveau d'éco-anxiété</h2>
+        <div class="progress-bar-container">
           <div
-            class="absolute h-6 bg-green-500 rounded transition-all duration-700"
+            class="progress-bar"
             :style="{ width: anxietyPercent + '%' }"
           ></div>
         </div>
-        <p class="mt-4 text-lg font-semibold text-center">{{ anxietyLabel }}</p>
-        <p class="mt-2 text-center">{{ anxietyMessage }}</p>
-        <div class="text-center mt-6">
-          <button
-            @click="restart"
-            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            Recommencer
-          </button>
+        <p class="result-label">{{ anxietyLabel }}</p>
+        <p class="result-message">{{ anxietyMessage }}</p>
+        <div class="restart-container">
+          <button @click="restart" class="restart-button">Recommencer</button>
         </div>
       </div>
     </transition>
@@ -160,32 +139,21 @@ export default {
 };
 </script>
 
-<style scoped>
-@import "tailwindcss";
+<style scoped lang="scss">
 
-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.4s ease;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-.animate-fade-in {
-  animation: fadeIn 0.5s ease-in-out;
-}
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+.quiz-container {
+  width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+
+  .choices-container {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
   }
 }
+
 </style>
