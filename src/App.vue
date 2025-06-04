@@ -100,7 +100,7 @@ export default {
       );
     },
     totalScore() {
-      return this.answers.reduce((sum, val) => sum + val, 0);
+      return this.answers.reduce((sum, val) => sum + parseInt(val), 0);
     },
     anxietyPercent() {
       return Math.round((this.totalScore / (this.questions.length * 3)) * 100);
@@ -226,6 +226,20 @@ export default {
     display: flex;
     align-items: center;
     justify-content: space-between;
+  }
+  .progress-bar-container {
+    width: 100%;
+    height: 20px;
+    background-color: #e0e0e0;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 20px 0;
+
+    .progress-bar {
+      height: 100%;
+      background-color: #4caf50;
+      transition: width 0.3s ease-in-out;
+    }
   }
 
   @keyframes fadeIn {
