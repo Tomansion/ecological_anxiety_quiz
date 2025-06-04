@@ -15,7 +15,7 @@
       <div v-if="!showResult" :key="currentQuestionIndex">
         <div class="question-container">
           <p class="question-text">
-            {{ questions[currentQuestionIndex].text }}
+            {{ displayedText }}
           </p>
           <div class="choices-container">
             <button
@@ -84,6 +84,7 @@ export default {
       answers: [],
       currentQuestionIndex: 0,
       showResult: false,
+      displayedText: "",
     };
   },
   computed: {
@@ -128,6 +129,7 @@ export default {
     nextQuestion() {
       if (this.currentQuestionIndex < this.questions.length - 1) {
         this.currentQuestionIndex++;
+        this.revealText();
       } else if (this.isComplete) {
         this.showResult = true;
       }
@@ -135,13 +137,32 @@ export default {
     prevQuestion() {
       if (this.currentQuestionIndex > 0) {
         this.currentQuestionIndex--;
+        this.revealText();
       }
     },
     restart() {
       this.answers = [];
       this.currentQuestionIndex = 0;
       this.showResult = false;
+      this.revealText();
     },
+    revealText() {
+      const fullText = this.questions[this.currentQuestionIndex].text;
+      this.displayedText = "";
+      let index = 0;
+
+      const interval = setInterval(() => {
+        if (index < fullText.length) {
+          this.displayedText += fullText[index];
+          index++;
+        } else {
+          clearInterval(interval);
+        }
+      }, 40);
+    },
+  },
+  mounted() {
+    this.revealText();
   },
 };
 </script>
@@ -149,16 +170,11 @@ export default {
 <style scoped lang="scss">
 .quiz-container {
   width: 400px;
-  margin: 0 auto;
-  padding: 20px;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 
   .quiz-title {
     text-align: center;
     display: flex;
-    align-items: center;  
+    align-items: center;
     justify-content: space-between;
 
     .quiz-icon {
@@ -168,10 +184,40 @@ export default {
     }
   }
 
-  .choices-container {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
+  .question-container {
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  
+    .question-text {
+      min-height: 80px;
+      margin-top: 0px;
+    }
+
+    .choices-container {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .question-text {
+      font-size: 1.2em;
+      margin-bottom: 20px;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
 </style>
