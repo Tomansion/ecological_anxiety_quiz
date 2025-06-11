@@ -1,0 +1,7 @@
+{
+  "Classe 1 : Non éco-anxieux.se ": { "from": 0, "to": 23 },
+  "Classe 2 : Faiblement éco-anxieux.se ": { "from": 24, "to": 47 },
+  "Classe 3 : Moyennement éco-anxieux.se": { "from": 48, "to": 71 },
+  "Classe 4 : Très éco-anxieux.se": { "from": 72, "to": 95 },
+  "Classe 5 : Eco-anxiété envahissante": { "from": 96, "to": 120 }
+}

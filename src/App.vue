@@ -53,18 +53,38 @@
     </div>
 
     <!-- Result -->
-    <div v-else key="result" class="result-container">
-      <h2 class="result-title">Ton niveau d'éco-anxiété</h2>
-      <div class="progress-bar-container">
-        <div
-          class="progress-bar"
-          :style="{ width: anxietyPercent + '%' }"
-        ></div>
+    <div v-else key="result" class="results">
+      <div class="result-container">
+        <h2 class="result-title">Ton niveau d'éco-anxiété :</h2>
+
+        <!-- Progress bar & levels -->
+        <div class="level">
+          <div class="progress-bar-container">
+            <div
+              class="progress-bar"
+              :style="{ height: anxietyPercent + '%' }"
+            ></div>
+          </div>
+
+          <!-- Coefficients -->
+          <div class="coefficients">
+            <div
+              class="coefficient"
+              :class="{ highlighted: isCurrentScoreIn(value) }"
+              v-for="(value, dimension) in coefficient"
+              :key="dimension"
+            >
+              {{ dimension }}
+            </div>
+          </div>
+        </div>
       </div>
-      <p class="result-label">{{ anxietyLabel }}</p>
-      <p class="result-message">{{ anxietyMessage }}</p>
+
+      <!-- Actions -->
       <div class="restart-container">
-        <button @click="restart" class="restart-button">Recommencer</button>
+        <button @click="restart" class="restart-button borderless">
+          Recommencer
+        </button>
       </div>
     </div>
   </div>
@@ -72,6 +92,7 @@
 
 <script>
 import questions from "./assets/questions_grouped_by_dimension.json";
+import coefficient from "./assets/coefficient.json";
 
 export default {
   name: "EcoAnxietyQuiz",
@@ -86,9 +107,10 @@ export default {
       },
       answers: [],
       currentQuestionIndex: 0,
-      showResult: false,
+      showResult: true,
       displayedText: "",
       textAnimationInterval: null,
+      coefficient: coefficient,
     };
   },
   computed: {
@@ -102,14 +124,14 @@ export default {
       return this.answers.reduce((sum, val) => sum + parseInt(val), 0);
     },
     anxietyPercent() {
-      return Math.round((this.totalScore / (this.questions.length * 3)) * 100);
+      return 100 - Math.round((this.totalScore / (this.questions.length * 3)) * 100);
     },
     anxietyLabel() {
-      const score = this.totalScore;
-      if (score <= 3) return "Sérénité";
-      if (score <= 6) return "Inquiet";
-      if (score <= 9) return "Anxieux";
-      return "Éco-anxieux aigu";
+      for (const [label, range] of Object.entries(this.coefficient)) {
+        if (this.isCurrentScoreIn(range)) {
+          return label;
+        }
+      }
     },
     anxietyMessage() {
       const messages = {
@@ -172,6 +194,12 @@ export default {
         }
       }, 30);
     },
+    isCurrentScoreIn(value) {
+      return (
+        this.totalScore >= value.from * 0.75 &&
+        this.totalScore <= value.to * 0.75
+      );
+    },
   },
   mounted() {
     this.questions = [];
@@ -195,7 +223,7 @@ export default {
 
 <style scoped lang="scss">
 .quiz-container {
-  width: 400px;
+  width: 450px;
 
   .quiz-title {
     text-align: center;
@@ -245,18 +273,57 @@ export default {
     align-items: center;
     justify-content: space-between;
   }
-  .progress-bar-container {
-    width: 100%;
-    height: 20px;
-    background-color: #e0e0e0;
-    border-radius: 10px;
-    overflow: hidden;
-    margin: 20px 0;
 
-    .progress-bar {
+  // Results
+  .result-container {
+    padding: 20px;
+    background-color: #f9f9f9;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    margin-top: 10px;
+    margin-bottom: 20px;
+
+    h2 {
+      margin-top: 0px;
+    }
+
+    .level {
+      display: flex;
+      height: 300px;
+
+      .coefficients {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        margin-left: 20px;
+
+        .coefficient {
+          opacity: 0.5;
+
+          &.highlighted {
+            color: #4caf50;
+            font-weight: bold;
+            opacity: 1;
+          }
+        }
+      }
+    }
+
+    .progress-bar-container {
       height: 100%;
-      background-color: #4caf50;
-      transition: width 0.3s ease-in-out;
+      width: 20px;
+      background-color: #e0e0e0;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-right: 10px;
+      box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+      transform: rotate(180deg);
+
+      .progress-bar {
+        height: 100%;
+        background-color: #4caf50;
+        transition: height 0.3s ease-in-out;
+      }
     }
   }
 
