@@ -10,75 +10,74 @@
       />
     </h1>
 
-    <transition name="fade" mode="out-in">
-      <!-- Question -->
-      <div v-if="!showResult" :key="currentQuestionIndex">
-        <div class="question-container">
+    <!-- Question -->
+    <div v-if="!showResult" :key="currentQuestionIndex">
+      <div class="question-container">
+        <h2
+          class="question-dimension"
+          v-if="currentQuestionIndex < questions.length"
+        >
+          {{ questions[currentQuestionIndex].dimension }}
+        </h2>
+        <transition name="fade" mode="out-in">
           <p class="question-text">
             {{ displayedText }}
           </p>
-          <div class="choices-container">
-            <button
-              v-for="(label, value) in choices"
-              :key="value"
-              @click="selectAnswer(value)"
-              class="choice-button"
-              :class="{
-                selected: answers[currentQuestionIndex] === value,
-              }"
-            >
-              {{ label }}
-            </button>
-          </div>
-        </div>
-
-        <!-- Question Counter -->
-        <div class="question-counter">
+        </transition>
+        <div class="choices-container">
           <button
-            @click="prevQuestion"
-            class="prev-button borderless"
-            :disabled="currentQuestionIndex === 0"
+            v-for="(label, value) in choices"
+            :key="value"
+            @click="selectAnswer(value)"
+            class="choice-button"
+            :class="{
+              selected: answers[currentQuestionIndex] === value,
+            }"
           >
-            Précédent
+            {{ label }}
           </button>
-          <p>
-            Question {{ currentQuestionIndex + 1 }} / {{ questions.length }}
-          </p>
         </div>
       </div>
 
-      <!-- Result -->
-      <div v-else key="result" class="result-container">
-        <h2 class="result-title">Ton niveau d'éco-anxiété</h2>
-        <div class="progress-bar-container">
-          <div
-            class="progress-bar"
-            :style="{ width: anxietyPercent + '%' }"
-          ></div>
-        </div>
-        <p class="result-label">{{ anxietyLabel }}</p>
-        <p class="result-message">{{ anxietyMessage }}</p>
-        <div class="restart-container">
-          <button @click="restart" class="restart-button">Recommencer</button>
-        </div>
+      <!-- Question Counter -->
+      <div class="question-counter">
+        <button
+          @click="prevQuestion"
+          class="prev-button borderless"
+          :disabled="currentQuestionIndex === 0"
+        >
+          Précédent
+        </button>
+        <p>Question {{ currentQuestionIndex + 1 }} / {{ questions.length }}</p>
       </div>
-    </transition>
+    </div>
+
+    <!-- Result -->
+    <div v-else key="result" class="result-container">
+      <h2 class="result-title">Ton niveau d'éco-anxiété</h2>
+      <div class="progress-bar-container">
+        <div
+          class="progress-bar"
+          :style="{ width: anxietyPercent + '%' }"
+        ></div>
+      </div>
+      <p class="result-label">{{ anxietyLabel }}</p>
+      <p class="result-message">{{ anxietyMessage }}</p>
+      <div class="restart-container">
+        <button @click="restart" class="restart-button">Recommencer</button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
+import questions from "./assets/questions_grouped_by_dimension.json";
+
 export default {
   name: "EcoAnxietyQuiz",
   data() {
     return {
-      questions: [
-        { text: "Je m'inquiète pour l'avenir de la planète." },
-        { text: "Je me sens impuissant face à la crise climatique." },
-        { text: "Je change mes habitudes par peur de l'effondrement." },
-        {
-          text: "Je ressens de l'anxiété en lisant des actualités écologiques.",
-        },
-      ],
+      questions: [],
       choices: {
         0: "Jamais",
         1: "Parfois",
@@ -171,10 +170,24 @@ export default {
           clearInterval(this.textAnimationInterval);
           this.textAnimationInterval = null; // Reset the interval ID
         }
-      }, 40);
+      }, 30);
     },
   },
   mounted() {
+    this.questions = [];
+    console.log(questions);
+    Object.keys(questions).forEach((dimension) => {
+      console.log(dimension);
+
+      questions[dimension].forEach((question) => {
+        this.questions.push({
+          text: question,
+          dimension: dimension,
+        });
+      });
+    });
+
+    console.log(this.questions);
     this.revealText();
   },
 };
@@ -197,6 +210,11 @@ export default {
     }
   }
 
+  .question-dimension {
+    padding-top: 0px;
+    margin-top: 0px;
+  }
+
   .question-container {
     margin: 0 auto;
     padding: 20px;
@@ -205,7 +223,7 @@ export default {
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 
     .question-text {
-      min-height: 50px;
+      min-height: 130px;
       margin-top: 0px;
     }
 
