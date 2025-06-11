@@ -86,6 +86,31 @@
           Recommencer
         </button>
       </div>
+
+      <!-- Notes -->
+      <div class="notes">
+        La présente échelle est adaptée à partir de différente sources :<br /><br />
+
+        Ágoston, Csilla, et al. « The Psychological Consequences of the
+        Ecological Crisis: Three New Questionnaires to Assess Eco-Anxiety,
+        Eco-Guilt, and Ecological Grief ». Climate Risk Management, vol. 37,
+        2022, p. 100441. DOI.org (Crossref),
+        https://doi.org/10.1016/j.crm.2022.100441.<br /><br />
+
+        H. Jalin, C. Chandes, A. Congard, R. Poinsot, A.-H. Boudoukha.
+        Conception d’une Echelle de Mesure de l’Eco-Anxiété (EMEA). 49ème
+        Congrès annuel de TCC, Association Française de Thérapie Comportementale
+        et Cognitive (AFTCC). Paris, 2021.<br /><br />
+
+        Jalin H. Caractérisation clinique de l’éco-anxiété, élaboration d’une
+        échelle d’autoévaluation (travail d’étude et de recherche, phase II,
+        mémoire de psychologie), Université de nantes, 2020, 89 pages<br /><br />
+
+        Jalin, H., Chandes, C., & Boudoukha, A. H. (2023). Assessing Eco-Anxiety
+        with a mixed method: Creation and Validation of a three dimensions
+        scale.<br /><br />I Schmerber, C. (2022). Petit guide de survie pour
+        éco-anxieux. Philippe Rey.
+      </div>
     </div>
   </div>
 </template>
@@ -124,7 +149,9 @@ export default {
       return this.answers.reduce((sum, val) => sum + parseInt(val), 0);
     },
     anxietyPercent() {
-      return 100 - Math.round((this.totalScore / (this.questions.length * 3)) * 100);
+      return (
+        100 - Math.round((this.totalScore / (this.questions.length * 3)) * 100)
+      );
     },
     anxietyLabel() {
       for (const [label, range] of Object.entries(this.coefficient)) {
@@ -289,7 +316,7 @@ export default {
 
     .level {
       display: flex;
-      height: 300px;
+      height: 160px;
 
       .coefficients {
         display: flex;
@@ -325,6 +352,11 @@ export default {
         transition: height 0.3s ease-in-out;
       }
     }
+  }
+  .notes {
+    font-size: 0.6em;
+    color: #555;
+    margin-top: 10px;
   }
 
   @keyframes fadeIn {
