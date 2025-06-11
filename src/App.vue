@@ -54,7 +54,10 @@
 
     <!-- Result -->
     <div v-else key="result" class="results">
-      <div class="result-container">
+      <div
+        class="result-container"
+        :class="{ sad: anxietyPercent < 50, happy: anxietyPercent >= 50 }"
+      >
         <h2 class="result-title">Ton niveau d'éco-anxiété :</h2>
 
         <!-- Progress bar & levels -->
@@ -310,6 +313,20 @@ export default {
     margin-top: 10px;
     margin-bottom: 20px;
 
+    position: relative;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center right;
+
+
+    &.sad {
+      background-image: url("./assets/sad.png");
+    }
+
+    &.happy {
+      background-image: url("./assets/happy.png");
+    }
+
     h2 {
       margin-top: 0px;
     }
@@ -354,9 +371,9 @@ export default {
     }
   }
   .notes {
-    font-size: 0.6em;
+    font-size: 0.5em;
     color: #555;
-    margin-top: 10px;
+    margin-top: 20px;
   }
 
   @keyframes fadeIn {
