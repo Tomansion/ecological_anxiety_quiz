@@ -318,7 +318,6 @@ export default {
     background-repeat: no-repeat;
     background-position: center right;
 
-
     &.sad {
       background-image: url("./assets/sad.png");
     }
@@ -384,6 +383,52 @@ export default {
     to {
       opacity: 1;
       transform: translateY(0);
+    }
+  }
+}
+
+// For smartphones:
+@media (max-width: 600px) {
+  .quiz-container {
+    width: 100%;
+    padding: 0px;
+
+    .quiz-title {
+      flex-direction: column;
+      align-items: center;
+
+      .quiz-icon {
+        width: 100px;
+        margin-top: 10px;
+      }
+    }
+
+    .question-text {
+      font-size: 1em;
+    }
+
+    .result-container {
+      height: auto;
+
+      .result-title {
+        font-size: 1em;
+        text-shadow: 0px 0px 10px white;
+      }
+
+      .coefficient {
+        font-size: 0.8em;
+        opacity: 1 !important;
+        text-shadow: 0px 0px 10px white;
+      }
+    }
+
+    .question-counter {
+      flex-direction: column-reverse;
+      align-items: center;
+      justify-content: center;
+
+      p {
+      }
     }
   }
 }
