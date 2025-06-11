@@ -135,7 +135,7 @@ export default {
       },
       answers: [],
       currentQuestionIndex: 0,
-      showResult: true,
+      showResult: false,
       displayedText: "",
       textAnimationInterval: null,
       coefficient: coefficient,
