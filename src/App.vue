@@ -56,7 +56,11 @@
     <div v-else key="result" class="results">
       <div
         class="result-container"
-        :class="{ sad: anxietyPercent < 50, happy: anxietyPercent >= 50 }"
+        :class="{
+          cry: anxietyPercent <= 33,
+          sad: anxietyPercent > 33 && anxietyPercent <= 66,
+          happy: anxietyPercent > 66,
+        }"
       >
         <h2 class="result-title">Ton niveau d'éco-anxiété :</h2>
 
@@ -317,6 +321,10 @@ export default {
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center right;
+
+    &.cry {
+      background-image: url("./assets/cry.png");
+    }
 
     &.sad {
       background-image: url("./assets/sad.png");
