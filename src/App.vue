@@ -54,6 +54,7 @@
 
     <!-- Result -->
     <div v-else key="result" class="results">
+      <!-- Coefficients -->
       <div
         class="result-container"
         :class="{
@@ -87,17 +88,46 @@
         </div>
       </div>
 
+      <!-- Other people scores -->
+      <div v-if="otherPeopleScores" class="other-people-scores">
+        <h2>Le niveau d'éco-anxiété des autres :</h2>
+        <div class="scores-list">
+          <div
+            v-for="(score, label) in otherPeopleScores"
+            :key="label"
+            class="score-item"
+          >
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+              "
+            >
+              <span>{{ label }} :</span>
+              <span>
+                <b>{{ score.count }}</b> ({{ score.percentage }})%
+              </span>
+            </div>
+            <div class="progress-bar-container">
+              <div
+                class="progress-bar"
+                :style="{ width: score.percentage + '%' }"
+              ></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Actions -->
       <div class="restart-container">
-        <button @click="restart" class="restart-button borderless">
-          Recommencer
-        </button>
+        <button @click="restart" class="restart-button">Recommencer</button>
       </div>
 
       <!-- Notes -->
       <div class="notes">
-        La présente échelle est adaptée à partir de différente sources :<br /><br />
-
+        La présente échelle est adaptée à partir des publications et études
+        scientifiques suivantes :<br /><br />
         Ágoston, Csilla, et al. « The Psychological Consequences of the
         Ecological Crisis: Three New Questionnaires to Assess Eco-Anxiety,
         Eco-Guilt, and Ecological Grief ». Climate Risk Management, vol. 37,
@@ -116,7 +146,13 @@
         Jalin, H., Chandes, C., & Boudoukha, A. H. (2023). Assessing Eco-Anxiety
         with a mixed method: Creation and Validation of a three dimensions
         scale.<br /><br />I Schmerber, C. (2022). Petit guide de survie pour
-        éco-anxieux. Philippe Rey.
+        éco-anxieux. Philippe Rey.<br /><br />
+
+        <a
+          href="https://github.com/Tomansion/ecological_anxiety_quiz"
+          target="_blank"
+          >Project GitHub</a
+        >
       </div>
     </div>
   </div>
@@ -143,6 +179,8 @@ export default {
       displayedText: "",
       textAnimationInterval: null,
       coefficient: coefficient,
+
+      otherPeopleScores: null,
     };
   },
   computed: {
@@ -167,19 +205,6 @@ export default {
         }
       }
     },
-    anxietyMessage() {
-      const messages = {
-        Sérénité:
-          "Tu sembles bien dans tes baskets ! Continue à t'informer avec sérénité.",
-        Inquiet:
-          "Tu commences à t'inquiéter, c'est normal. Viens échanger avec d'autres pour te sentir moins seul.",
-        Anxieux:
-          "Ton anxiété est palpable. Il existe des espaces pour en parler, découvre-les !",
-        "Éco-anxieux aigu":
-          "Ton éco-anxiété est très forte. Un accompagnement peut t'aider à transformer cette énergie en action.",
-      };
-      return messages[this.anxietyLabel] || "";
-    },
   },
   methods: {
     selectAnswer(value) {
@@ -188,10 +213,15 @@ export default {
     },
     nextQuestion() {
       if (this.currentQuestionIndex < this.questions.length - 1) {
+        this.sendAnswerToServer(
+          this.currentQuestionIndex,
+          this.answers[this.currentQuestionIndex]
+        );
         this.currentQuestionIndex++;
         this.revealText();
       } else if (this.isComplete) {
         this.showResult = true;
+        this.fetchOtherPeopleScores();
       }
     },
     prevQuestion() {
@@ -234,13 +264,122 @@ export default {
         this.totalScore <= value.to * 0.75
       );
     },
+    sendAnswerToServer(questionIndex, answer) {
+      const question = this.questions[questionIndex];
+      const payload = {
+        question_title: question.text,
+        answer: answer,
+      };
+
+      fetch("https://ecological-quiz-db.tomansion.fr/api/answer", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      })
+        .then((response) => response.json())
+        .then((data) => {})
+        .catch((error) => {
+          console.error("Error sending answer:", error);
+        });
+    },
+    fetchOtherPeopleScores() {
+      // Send a request to the server to fetch other people's scores
+      const classesMap = {
+        1: "Classe 1 : Non éco-anxieux.se",
+        2: "Classe 2 : Faiblement éco-anxieux.se",
+        3: "Classe 3 : Moyennement éco-anxieux.se",
+        4: "Classe 4 : Très éco-anxieux.se",
+        5: "Classe 5 : Eco-anxiété envahissante",
+      };
+
+      fetch("https://ecological-quiz-db.tomansion.fr/api/class-counts", {
+        headers: {
+          Accept: "application/json",
+        },
+        mode: "cors",
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          this.otherPeopleScores = data["class_counts"];
+          // Map the scores to the class labels
+          for (const key in this.otherPeopleScores) {
+            if (classesMap[key]) {
+              this.otherPeopleScores[classesMap[key]] =
+                this.otherPeopleScores[key];
+              delete this.otherPeopleScores[key];
+            } else {
+              console.log(`Unknown class key: ${key}`);
+            }
+          }
+
+          // Calculate the total number of people
+          const totalPeople = Object.values(this.otherPeopleScores).reduce(
+            (sum, count) => sum + count,
+            0
+          );
+
+          // Normalize the scores to percentages
+          for (const label in this.otherPeopleScores) {
+            if (totalPeople === 0) {
+              this.otherPeopleScores[label] = {
+                count: 0,
+                percentage: 0,
+              };
+              continue;
+            }
+
+            const percentage = Math.round(
+              (this.otherPeopleScores[label] / totalPeople) * 100
+            );
+            this.otherPeopleScores[label] = {
+              count: this.otherPeopleScores[label],
+              percentage: percentage,
+            };
+          }
+
+          // Send the user score to the server
+          // Find the class index from the label
+          let finishedClass = null;
+
+          for (const [key, label] of Object.entries(classesMap)) {
+            if (label.trim() === (this.anxietyLabel || "").trim()) {
+              finishedClass = parseInt(key);
+              break;
+            }
+          }
+
+          if (finishedClass === null) {
+            console.error("Could not determine the finished class.");
+            return;
+          }
+
+          const userScore = {
+            finishedClass: finishedClass,
+          };
+
+          fetch("https://ecological-quiz-db.tomansion.fr/api/complete", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(userScore),
+          })
+            .then((response) => response.json())
+            .then((data) => {})
+            .catch((error) => {
+              console.error("Error sending user score:", error);
+            });
+        })
+        .catch((error) => {
+          console.error("Error fetching other people's scores:", error);
+        });
+    },
   },
   mounted() {
     this.questions = [];
-    console.log(questions);
     Object.keys(questions).forEach((dimension) => {
-      console.log(dimension);
-
       questions[dimension].forEach((question) => {
         this.questions.push({
           text: question,
@@ -249,7 +388,6 @@ export default {
       });
     });
 
-    console.log(this.questions);
     this.revealText();
   },
 };
@@ -309,78 +447,124 @@ export default {
   }
 
   // Results
-  .result-container {
-    padding: 20px;
-    background-color: #f9f9f9;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-    margin-top: 10px;
-    margin-bottom: 20px;
+  .results {
+    .result-container {
+      padding: 20px;
+      background-color: #f9f9f9;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      margin-top: 10px;
+      margin-bottom: 20px;
 
-    position: relative;
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center right;
+      position: relative;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center right;
 
-    &.cry {
-      background-image: url("./assets/cry.png");
+      &.cry {
+        background-image: url("./assets/cry.png");
+      }
+
+      &.sad {
+        background-image: url("./assets/sad.png");
+      }
+
+      &.happy {
+        background-image: url("./assets/happy.png");
+      }
+
+      h2 {
+        margin-top: 0px;
+      }
+
+      .level {
+        display: flex;
+        height: 160px;
+
+        .coefficients {
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          margin-left: 20px;
+
+          .coefficient {
+            opacity: 0.5;
+
+            &.highlighted {
+              color: #4caf50;
+              font-weight: bold;
+              opacity: 1;
+            }
+          }
+        }
+      }
+
+      .progress-bar-container {
+        height: 100%;
+        width: 20px;
+        background-color: #e0e0e0;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-right: 10px;
+        box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+        transform: rotate(180deg);
+
+        .progress-bar {
+          height: 100%;
+          background-color: #4caf50;
+          transition: height 0.3s ease-in-out;
+        }
+      }
     }
 
-    &.sad {
-      background-image: url("./assets/sad.png");
-    }
+    .other-people-scores {
+      padding: 20px;
+      background-color: #f9f9f9;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
 
-    &.happy {
-      background-image: url("./assets/happy.png");
-    }
+      h2 {
+        margin-bottom: 10px;
+      }
 
-    h2 {
-      margin-top: 0px;
-    }
+      .score-item {
+        list-style-type: none;
+        padding: 0;
+        opacity: 0.5;
+        margin-bottom: 5px;
+        font-size: 0.9em;
+        color: #333;
 
-    .level {
-      display: flex;
-      height: 160px;
-
-      .coefficients {
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
-        margin-left: 20px;
 
-        .coefficient {
-          opacity: 0.5;
+        .progress-bar-container {
+          width: 100%;
+          height: 10px;
+          background-color: #e0e0e0;
+          border-radius: 5px;
+          overflow: hidden;
 
-          &.highlighted {
-            color: #4caf50;
-            font-weight: bold;
-            opacity: 1;
+          .progress-bar {
+            height: 100%;
+            background-color: #2196f3;
+            transition: width 0.3s ease-in-out;
+            width: calc(var(--percentage) * 1%);
           }
         }
       }
     }
 
-    .progress-bar-container {
-      height: 100%;
-      width: 20px;
-      background-color: #e0e0e0;
-      border-radius: 10px;
-      overflow: hidden;
-      margin-right: 10px;
-      box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
-      transform: rotate(180deg);
-
-      .progress-bar {
-        height: 100%;
-        background-color: #4caf50;
-        transition: height 0.3s ease-in-out;
-      }
+    .restart-container {
+      text-align: center;
+      margin-top: 20px;
     }
-  }
-  .notes {
-    font-size: 0.5em;
-    color: #555;
-    margin-top: 20px;
+
+    .notes {
+      font-size: 0.5em;
+      color: #555;
+      margin-top: 20px;
+    }
   }
 
   @keyframes fadeIn {
